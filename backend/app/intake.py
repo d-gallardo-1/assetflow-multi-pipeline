@@ -104,7 +104,7 @@ def next_asset_id(taken: Iterable[str]) -> str:
     """One past the highest number in use. When that would no longer fit the id
     pattern, the first free number instead, so an assigned id is always usable."""
     numbers = {int(asset_id.split("-")[1]) for asset_id in taken}
-    number = max(FIRST_ASSIGNED_NUMBER - 1, *numbers) + 1
+    number = max([FIRST_ASSIGNED_NUMBER - 1, *numbers]) + 1
     if number > MAX_ASSET_NUMBER:
         number = next(n for n in range(FIRST_ASSIGNED_NUMBER, MAX_ASSET_NUMBER + 1) if n not in numbers)
     return f"AST-{number}"

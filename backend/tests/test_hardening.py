@@ -37,3 +37,15 @@ def test_upload_limit_holds_for_a_body_without_a_declared_length(client, engine)
     assert "content-length" not in response.request.headers
     assert (response.status_code, response.json()["detail"]) == (413, "The file is larger than the 256 KB limit.")
     assert engine.snapshot().sequence == 0
+
+
+def test_an_id_is_assigned_when_the_portfolio_is_empty(client, engine):
+    for board in engine.snapshot().pipelines:
+        for asset in board.assets:
+            engine.soft_delete(asset.asset_id)
+    for asset in engine.snapshot().trash:
+        engine.purge(asset.asset_id)
+
+    created = client.post(f"{API}/assets", json=NEW_ASSET)
+
+    assert (created.status_code, created.json()["asset_id"]) == (201, "AST-417")
