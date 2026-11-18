@@ -38,11 +38,14 @@ function Badge({ tone, icon: Icon, label, children }: BadgeProps) {
   );
 }
 
-const RISK: Record<RiskLevel, { tone: Tone; icon: LucideIcon }> = {
+const RISK: Record<RiskLevel, { tone: 'nominal' | 'warn' | 'critical'; icon: LucideIcon }> = {
   LOW: { tone: 'nominal', icon: CircleCheck },
   MEDIUM: { tone: 'warn', icon: AlertTriangle },
   HIGH: { tone: 'critical', icon: OctagonAlert },
 };
+
+/** The tone of a risk level, for charts that must agree with the badge. */
+export const riskTone = (level: RiskLevel) => RISK[level].tone;
 
 export function RiskBadge({ level }: { level: RiskLevel }) {
   return (
@@ -70,7 +73,14 @@ export function CoordsBadge({ coords }: { coords: { lat: number; lon: number } }
 
 /** Amber in the last week of retention; the number of days is always written out. */
 export function RetentionBadge({ daysLeft }: { daysLeft: number | null }) {
-  const days = daysLeft ?? 0;
+  if (daysLeft === null) {
+    return (
+      <Badge tone="neutral" icon={Clock}>
+        RETENTION UNKNOWN
+      </Badge>
+    );
+  }
+  const days = daysLeft;
   return (
     <Badge tone={days <= 7 ? 'warn' : 'neutral'} icon={Clock}>
       {days} {days === 1 ? 'DAY' : 'DAYS'} LEFT

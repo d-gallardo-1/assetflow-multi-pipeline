@@ -41,7 +41,12 @@ export class FakeEventSource {
   }
 
   emit(type: string, data: unknown = {}): void {
-    const event = { data: JSON.stringify(data) } as MessageEvent<string>;
+    this.emitRaw(type, JSON.stringify(data));
+  }
+
+  /** Delivers `text` as the frame body unchanged, for example a truncated frame. */
+  emitRaw(type: string, text: string): void {
+    const event = { data: text } as MessageEvent<string>;
     for (const listener of this.listeners.get(type) ?? []) listener(event);
   }
 

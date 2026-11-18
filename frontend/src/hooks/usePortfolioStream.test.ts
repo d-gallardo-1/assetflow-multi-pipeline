@@ -64,6 +64,27 @@ describe('usePortfolioStream', () => {
     expect(result.current.snapshot?.sequence).toBe(9);
   });
 
+  it('ignores a frame that is not valid JSON and keeps the last good snapshot', () => {
+    const { result } = renderHook(() => usePortfolioStream());
+    act(() => FakeEventSource.latest.emit('snapshot', makeSnapshot({ sequence: 4 })));
+
+    advance(STALE_MS - 1000);
+    act(() => FakeEventSource.latest.emitRaw('update', '{"sequence": 5, "pipel'));
+
+    expect(result.current.snapshot?.sequence).toBe(4);
+    // The broken frame did not count as a sign of life: the silence timer still fires on time.
+    advance(1000);
+    expect(result.current.status).toBe('RECONNECTING');
+  });
+
+  it('does not report a connection as live on a broken first frame', () => {
+    const { result } = renderHook(() => usePortfolioStream());
+
+    act(() => FakeEventSource.latest.emitRaw('snapshot', 'not json'));
+
+    expect(result.current).toEqual({ snapshot: null, status: 'RECONNECTING' });
+  });
+
   it('stays connected while heartbeats arrive, even without updates', () => {
     const { result } = renderHook(() => usePortfolioStream());
     act(() => FakeEventSource.latest.emit('snapshot', makeSnapshot()));

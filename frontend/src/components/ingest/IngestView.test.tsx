@@ -77,8 +77,18 @@ describe('IngestView', () => {
     fireEvent.click(button('Validate and import pasted CSV'));
 
     await waitFor(() =>
-      expect(log().textContent).toContain('File rejected, nothing imported. Header row rejected. Missing column(s): region.'),
+      expect(log().textContent).toContain('Nothing imported. Header row rejected. Missing column(s): region.'),
     );
+  });
+
+  it('shows a failed reset instead of failing silently', async () => {
+    stubFetch({ detail: 'Service unavailable' }, 503);
+    render(<IngestView />);
+
+    fireEvent.click(button('Reset demo data'));
+
+    expect((await screen.findByRole('alert')).textContent).toBe('Reset failed. Service unavailable');
+    expect(button('Reset demo data').disabled).toBe(false);
   });
 
   it('refuses an oversized file without sending it', () => {

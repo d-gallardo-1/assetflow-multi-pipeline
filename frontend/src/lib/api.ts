@@ -5,6 +5,8 @@ export const API_BASE = '/api/v1';
 
 /** Mirrors MAX_CSV_BYTES in backend/app/exchange/csv_import.py. */
 export const MAX_CSV_BYTES = 256 * 1024;
+/** Mirrors MAX_CSV_ROWS in the same backend module. */
+export const MAX_CSV_ROWS = 500;
 
 /** Uses the server's own explanation when it sends one, so refusals are readable. */
 async function errorMessage(response: Response, fallback: string): Promise<string> {

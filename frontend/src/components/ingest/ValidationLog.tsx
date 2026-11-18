@@ -7,7 +7,7 @@ export interface ImportRun {
   /** Local wall-clock time of the run: this log lives in the browser tab only. */
   at: string;
   report: ImportReport | null;
-  /** Set when the whole file was refused. */
+  /** Set when nothing was imported: the file was refused as a whole, or the request failed. */
   failure: string | null;
 }
 
@@ -16,7 +16,7 @@ function Summary({ run }: { run: ImportRun }) {
     return (
       <p className="flex items-start gap-2 text-critical">
         <OctagonAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-        <span>File rejected, nothing imported. {run.failure}</span>
+        <span>Nothing imported. {run.failure}</span>
       </p>
     );
   }

@@ -52,9 +52,17 @@ export function usePortfolioStream(): { snapshot: PortfolioSnapshot | null; stat
     };
 
     const onSnapshot = (event: MessageEvent<string>) => {
+      let next: PortfolioSnapshot;
+      try {
+        next = JSON.parse(event.data) as PortfolioSnapshot;
+      } catch {
+        // A truncated frame proves nothing about the connection: it is ignored,
+        // and if no good frame follows the silence timer rebuilds the stream.
+        return;
+      }
       failures = 0;
       setStatus('CONNECTED');
-      setSnapshot(JSON.parse(event.data) as PortfolioSnapshot);
+      setSnapshot(next);
       armStaleTimer();
     };
 

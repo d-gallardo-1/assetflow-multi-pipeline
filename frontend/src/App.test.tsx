@@ -68,6 +68,16 @@ describe('App', () => {
     expect(screen.getByRole('region', { name: 'Multi-pipeline Kanban board' })).toBeTruthy();
   });
 
+  it('warns during a reconnect but keeps the controls usable', () => {
+    render(<App />);
+    emit('snapshot', makeSnapshot());
+
+    act(() => FakeEventSource.latest.fail(false)); // a blip: the browser retries by itself
+
+    expect(screen.getByRole('alert').textContent).toContain('Reconnecting to the live stream');
+    expect(view(/Move AST-401 to the trash bin/).matches(':disabled')).toBe(false);
+  });
+
   it('warns and disables the controls once the stream is given up on, but not navigation', () => {
     vi.useFakeTimers();
     try {

@@ -1,7 +1,8 @@
 import { Download, FileUp, PlayCircle, RotateCcw } from 'lucide-react';
 import { useRef, useState, type ChangeEvent } from 'react';
-import { MAX_CSV_BYTES, api } from '../../lib/api';
+import { MAX_CSV_BYTES, MAX_CSV_ROWS, api } from '../../lib/api';
 import type { ImportReport } from '../../types/portfolio';
+import { ErrorNote } from '../shared/ErrorNote';
 import { ValidationLog, type ImportRun } from './ValidationLog';
 
 const COLUMNS =
@@ -12,6 +13,7 @@ export function IngestView() {
   const [runs, setRuns] = useState<ImportRun[]>([]);
   const [busy, setBusy] = useState(false);
   const [pasted, setPasted] = useState('');
+  const [resetError, setResetError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   const record = (source: string, report: ImportReport | null, failure: string | null) =>
@@ -49,6 +51,9 @@ export function IngestView() {
     try {
       await api.reset();
       setRuns([]);
+      setResetError(null);
+    } catch (cause) {
+      setResetError(`Reset failed. ${cause instanceof Error ? cause.message : 'Request failed'}`);
     } finally {
       setBusy(false);
     }
@@ -61,7 +66,7 @@ export function IngestView() {
         <p className="text-sm text-slate-300">
           Valid rows are imported; each invalid row is listed below with its row number, column and reason. An asset
           id that is repeated in the file, already active or in the trash bin is rejected, never overwritten. Limits:
-          {` ${MAX_CSV_BYTES / 1024} KB`} and 500 data rows, UTF-8.
+          {` ${MAX_CSV_BYTES / 1024} KB`} and {MAX_CSV_ROWS} data rows, UTF-8.
         </p>
         <p className="font-mono text-xs text-slate-400">Columns: {COLUMNS}</p>
         <div className="flex flex-wrap gap-2">
@@ -88,6 +93,8 @@ export function IngestView() {
             Reset demo data
           </button>
         </div>
+
+        <ErrorNote message={resetError} />
 
         <label className="block text-xs text-slate-400">
           Or paste CSV text, header row first

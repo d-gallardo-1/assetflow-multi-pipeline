@@ -2,8 +2,8 @@ import { Download } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { api } from '../../lib/api';
 import { formatArea, formatGbp, formatNumber, percentOf } from '../../lib/format';
-import type { Kpis } from '../../types/portfolio';
-import { RiskBadge } from '../shared/Badges';
+import type { Kpis, RiskLevel } from '../../types/portfolio';
+import { RiskBadge, riskTone } from '../shared/Badges';
 import { BarList, type BarRow } from './BarList';
 
 function Panel({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -15,8 +15,6 @@ function Panel({ title, note, children }: { title: string; note?: string; childr
     </section>
   );
 }
-
-const RISK_TONE = { LOW: 'nominal', MEDIUM: 'warn', HIGH: 'critical' } as const;
 
 /** Executive portfolio analytics. Every figure comes from the backend and counts active assets only. */
 export function AnalyticsView({ kpis }: { kpis: Kpis }) {
@@ -70,7 +68,7 @@ export function AnalyticsView({ kpis }: { kpis: Kpis }) {
           <BarList
             caption="Risk distribution"
             rows={risks}
-            tone={(row) => RISK_TONE[row.key as keyof typeof RISK_TONE]}
+            tone={(row) => riskTone(row.key as RiskLevel)}
           />
         </Panel>
         <Panel title="Portfolio totals">

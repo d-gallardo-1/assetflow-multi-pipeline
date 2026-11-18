@@ -35,7 +35,8 @@ export function TrashView({ trash, pipelines, retentionDays }: Props) {
 
   const purge = async (assetId: string) => {
     await run(assetId, () => api.purge(assetId));
-    setConfirming(null);
+    // Only the confirmation of this asset closes: another may have been opened meanwhile.
+    setConfirming((current) => (current === assetId ? null : current));
   };
 
   return (
