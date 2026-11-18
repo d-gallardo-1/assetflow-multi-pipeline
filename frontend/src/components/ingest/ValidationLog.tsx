@@ -14,7 +14,7 @@ export interface ImportRun {
 function Summary({ run }: { run: ImportRun }) {
   if (run.failure !== null) {
     return (
-      <p className="flex items-start gap-2 text-critical">
+      <p className="flex items-start gap-2 text-red-400">
         <OctagonAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
         <span>Nothing imported. {run.failure}</span>
       </p>

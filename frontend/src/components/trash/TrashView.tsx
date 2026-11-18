@@ -105,7 +105,7 @@ export function TrashView({ trash, pipelines, retentionDays }: Props) {
                     </div>
                   </div>
                   {confirming === asset.asset_id && (
-                    <p role="alert" className="mt-2 text-sm text-critical">
+                    <p role="alert" className="mt-2 text-sm text-red-400">
                       Purging removes {asset.asset_id} and its audit trail for good. This cannot be undone.
                     </p>
                   )}

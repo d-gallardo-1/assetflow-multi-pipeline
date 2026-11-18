@@ -11,7 +11,7 @@ import type { RiskLevel, StreamStatus } from '../../types/portfolio';
 const TONES = {
   nominal: 'text-nominal border-nominal/50 bg-nominal/10',
   warn: 'text-warn border-warn/50 bg-warn/10',
-  critical: 'text-critical border-critical/60 bg-critical/10',
+  critical: 'text-red-400 border-critical/60 bg-critical/10',
   link: 'text-link border-link/50 bg-link/10',
   neutral: 'text-slate-300 border-edge bg-obsidian',
 } as const;
