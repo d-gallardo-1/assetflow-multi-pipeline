@@ -1,0 +1,79 @@
+@import 'tailwindcss';
+
+/* Design tokens (Tailwind CSS v4 reads its theme from CSS, not from a JS config). */
+@theme {
+  --color-obsidian: #090d16;
+  --color-panel: #111827;
+  --color-edge: #1f2937;
+  --color-nominal: #10b981;
+  --color-warn: #f59e0b;
+  --color-critical: #ef4444;
+  --color-link: #06b6d4;
+
+  /* System font stacks only: the UI must render with no network access. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-screen bg-obsidian font-sans text-slate-200 antialiased;
+  }
+
+  button:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Visible keyboard focus on every interactive element. */
+  :focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+  }
+
+  /* People who ask for less motion get none: colour changes become instant. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0s !important;
+      animation: none !important;
+    }
+  }
+
+  ::selection {
+    background-color: rgb(6 182 212 / 0.3);
+  }
+}
+
+@utility panel {
+  @apply rounded-lg border border-edge bg-panel;
+}
+
+@utility panel-title {
+  @apply text-xs font-semibold uppercase tracking-[0.14em] text-slate-400;
+}
+
+@utility tag {
+  @apply font-mono text-[13px] text-slate-100;
+}
+
+@utility field {
+  @apply w-full rounded-md border border-edge bg-obsidian px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md border border-edge bg-obsidian px-3 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-slate-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-md border border-link/60 bg-link/10 px-3 py-2 text-sm font-medium text-link transition-colors hover:bg-link/20 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-md border border-critical/60 bg-critical/10 px-3 py-2 text-sm font-medium text-critical transition-colors hover:bg-critical/20 disabled:cursor-not-allowed disabled:opacity-50;
+}
