@@ -34,7 +34,7 @@ def build_read_router(engine: PortfolioEngine, *, heartbeat_seconds: float) -> A
     async def stream(
         max_events: Annotated[
             int | None,
-            Query(ge=1, le=1000, description="Close the stream after N events (useful with curl)."),
+            Query(ge=1, le=1000, description="Close the stream after N state events; heartbeats are not counted."),
         ] = None,
     ) -> StreamingResponse:
         return StreamingResponse(

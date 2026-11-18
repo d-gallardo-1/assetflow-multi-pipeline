@@ -14,7 +14,7 @@ from typing import Callable, Iterable
 from .analytics import kpis
 from .broadcaster import Broadcaster
 from .errors import CommandRejected, utc_now
-from .intake import AssetInput
+from .intake import AssetInput, next_asset_id
 from .models import ActivityEntry, Asset, AuditAction, AuditEntry, GisCoords, PortfolioSnapshot
 from .pipelines import SPECS, stage_code, stage_label
 from .views import asset_view, boards, is_expired, trash_views
@@ -22,7 +22,6 @@ from .views import asset_view, boards, is_expired, trash_views
 __all__ = ["CommandRejected", "PortfolioEngine", "utc_now"]
 
 ACTIVITY_SIZE = 30
-FIRST_ASSIGNED_NUMBER = 417
 
 Seed = Callable[[datetime], list[Asset]]
 
@@ -97,7 +96,7 @@ class PortfolioEngine:
         added = []
         # Rows that bring their own id go first, so an assigned id never takes one.
         for data in sorted(inputs, key=lambda row: row.asset_id is None):
-            asset_id = data.asset_id or self._next_id()
+            asset_id = data.asset_id or next_asset_id(self._assets)
             if asset_id in self._assets:
                 raise CommandRejected(409, f"{asset_id} already exists.")
             asset = Asset(
@@ -176,10 +175,6 @@ class PortfolioEngine:
         del self._assets[asset.asset_id]
         entry = AuditEntry(at=now, action=AuditAction.PURGED, detail=detail)
         self._activity.appendleft(ActivityEntry(asset_id=asset.asset_id, name=asset.name, entry=entry))
-
-    def _next_id(self) -> str:
-        numbers = [int(asset_id.split("-")[1]) for asset_id in self._assets]
-        return f"AST-{max([FIRST_ASSIGNED_NUMBER - 1, *numbers]) + 1}"
 
     def _find(self, asset_id: str) -> Asset:
         asset = self._assets.get(asset_id)

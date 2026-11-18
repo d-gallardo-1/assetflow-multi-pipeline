@@ -6,21 +6,40 @@ from a spreadsheet are accepted or refused for the same reasons.
 
 from __future__ import annotations
 
+import unicodedata
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Iterable
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator
+from pydantic import (
+    AfterValidator, BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator,
+)
 
 from .models import Pipeline, RiskLevel
 from .pipelines import SPECS, stage_code
 
 ASSET_ID_PATTERN = r"^AST-\d{3,6}$"
+#: The largest number that pattern can hold.
+MAX_ASSET_NUMBER = 999_999
+#: Seed assets end at AST-416.
+FIRST_ASSIGNED_NUMBER = 417
 
 MAX_AREA_SQM = 50_000_000
 MAX_CAPITAL_GBP = Decimal("50000000000")
 MAX_GRID_MVA = 5_000
 
-Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=80)]
+
+
+def _printable(text: str) -> str:
+    """Refuse control characters. They have no place in a name, and a workbook
+    cannot store them: one such value would make every later export fail."""
+    if any(unicodedata.category(character) == "Cc" for character in text):
+        raise ValueError("must not contain control characters")
+    return text
+
+
+Text = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=2, max_length=80), AfterValidator(_printable)
+]
 
 # Spelled out so the accepted forms are documented, not left to a library default.
 _TRUE = {"true", "yes", "y", "1"}
@@ -79,6 +98,16 @@ class AssetInput(BaseModel):
             raise ValueError(f"stage: '{self.stage}' is not a stage of {self.pipeline.value}; expected one of {allowed}")
         self.stage = code
         return self
+
+
+def next_asset_id(taken: Iterable[str]) -> str:
+    """One past the highest number in use. When that would no longer fit the id
+    pattern, the first free number instead, so an assigned id is always usable."""
+    numbers = {int(asset_id.split("-")[1]) for asset_id in taken}
+    number = max(FIRST_ASSIGNED_NUMBER - 1, *numbers) + 1
+    if number > MAX_ASSET_NUMBER:
+        number = next(n for n in range(FIRST_ASSIGNED_NUMBER, MAX_ASSET_NUMBER + 1) if n not in numbers)
+    return f"AST-{number}"
 
 
 CSV_COLUMNS: tuple[str, ...] = tuple(AssetInput.model_fields)
