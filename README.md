@@ -4,7 +4,7 @@
 
 **A multi-pipeline Kanban and asset lifecycle control system for capital projects: live board synchronisation, bulk CSV ingestion with validation, a soft-delete trash bin with retention, and an executive analytics dashboard.**
 
-<!-- TODO: Insert 15s demo GIF here -->
+![AssetFlow demo: an asset moves one stage forward, another is sent to the trash bin and restored, a sample CSV batch of five assets is imported, and the portfolio analytics are shown](docs/demo.gif)
 
 > **Reference demo.** The organisation "Meridian Capital Assets & Infrastructure Sites — UK
 > Operations" is fictional. Every asset, site name, engineer and figure is invented, and
