@@ -6,6 +6,10 @@ describe('format', () => {
     expect(formatGbp('62500000.00')).toBe('£62,500,000');
     expect(formatGbp('62500000.00', true)).toBe('£62.5M');
     expect(formatGbp('180000.00', true)).toBe('£180K');
+    expect(formatGbp('2400000000.00', true)).toBe('£2.4B');
+    expect(formatGbp('999960.00', true)).toBe('£1M');
+    expect(formatGbp('950.00', true)).toBe('£950');
+    expect(formatGbp('0.00', true)).toBe('£0');
     expect(formatGbp('not money')).toBe('£ ?');
   });
 

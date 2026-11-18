@@ -1,13 +1,26 @@
 const GBP = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
-const GBP_COMPACT = new Intl.NumberFormat('en-GB', {
-  style: 'currency',
-  currency: 'GBP',
-  notation: 'compact',
-  // Without this, a currency keeps a trailing zero: "£88.0M".
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 1,
-});
 const NUMBER = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 1 });
+
+// Compact amounts are built here instead of with Intl's compact notation, whose
+// suffix depends on the ICU data of the runtime: the same code printed "£88M"
+// on one Node release and "£88m" on another and in the browser.
+const UNITS: [number, string][] = [
+  [1e9, 'B'],
+  [1e6, 'M'],
+  [1e3, 'K'],
+];
+
+function compactGbp(amount: number): string {
+  for (const [index, [size, suffix]] of UNITS.entries()) {
+    // A unit is used from the point where the unit below would round up to
+    // 1,000 of its own: 999,960 is "£1M", not "£1000K", and 950 stays "£950".
+    const below = UNITS[index + 1]?.[0] ?? 10;
+    if (amount >= size - below * 0.05) {
+      return `£${NUMBER.format(Math.round((amount / size) * 10) / 10)}${suffix}`;
+    }
+  }
+  return GBP.format(amount);
+}
 
 /**
  * Money arrives as a decimal string. It is converted to a number only here, to
@@ -16,7 +29,7 @@ const NUMBER = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 1 });
 export function formatGbp(value: string, compact = false): string {
   const amount = Number(value);
   if (!Number.isFinite(amount)) return '£ ?';
-  return (compact ? GBP_COMPACT : GBP).format(amount);
+  return compact ? compactGbp(amount) : GBP.format(amount);
 }
 
 export const formatNumber = (value: number): string => NUMBER.format(value);
