@@ -179,6 +179,9 @@ A refused command answers `{"detail": "..."}` with `404` (unknown asset), `409` 
 state: moving an asset that is in the trash bin, purging an active one) or `422` (bad
 input: a stage of another pipeline). Money is a decimal string, never a float.
 
+`max_events` counts state events, not heartbeats: the first command below prints the
+current snapshot and then waits for two changes.
+
 ```bash
 curl -N "http://127.0.0.1:8083/api/v1/stream?max_events=3"
 curl -X PATCH -H "Content-Type: application/json" -d '{"stage":"TITLE_CLOSED"}' \

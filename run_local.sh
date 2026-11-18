@@ -83,7 +83,10 @@ if [ -z "$healthy" ]; then
 fi
 
 cd "$frontend"
-if [ ! -d node_modules ]; then
+# npm writes node_modules/.package-lock.json as the last step of an install. Its
+# absence means there are no dependencies yet or a previous install was
+# interrupted, and a half-installed folder must not be trusted.
+if [ ! -f node_modules/.package-lock.json ]; then
   echo "Installing frontend dependencies..."
   npm ci --no-fund --no-audit
 fi

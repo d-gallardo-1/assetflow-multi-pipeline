@@ -146,6 +146,8 @@ build elsewhere and import the images, or use internal mirrors.
 | Health check defined once | `backend/Dockerfile` |
 | Content Security Policy (same origin only), `X-Frame-Options`, `nosniff`, `Referrer-Policy` | `frontend/nginx.conf` |
 | Same-origin API through the proxy, so no CORS is enabled | `frontend/nginx.conf`, `vite.config.ts` |
+| API requests that a browser marks as coming from another site or another local port are refused (`Sec-Fetch-Site`) | `frontend/nginx.conf` |
+| Text fields refuse control characters; assigned ids always fit the id pattern | `backend/app/intake.py` |
 | Asset ids validated by pattern; unknown body fields refused | `backend/app/intake.py`, `backend/app/api/` |
 | Every rule enforced in the backend, never only in the UI | `backend/app/engine.py` |
 | Import size and row limits; no overwrite | `backend/app/exchange/csv_import.py` |
@@ -158,7 +160,10 @@ build elsewhere and import the images, or use internal mirrors.
 These are accepted for a demo and would be blockers anywhere else.
 
 - **No authentication or authorisation.** Anyone who can reach the port can move, delete,
-  purge and import. This is why the port is bound to localhost.
+  purge and import. This is why the port is bound to localhost. The `Sec-Fetch-Site`
+  check in Nginx stops another web page from using the browser of the person at the
+  machine to do so; it is not access control, it depends on the browser sending the
+  header, and the local dev server (`run_local`) does not have it.
 - **The audit trail says what and when, not who.** There are no users, so there is no
   actor to record. It is also in memory, and a purge removes it with the asset.
 - **Purge is immediate and final.** There is no second approval and no export before

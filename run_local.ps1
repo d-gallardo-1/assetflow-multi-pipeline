@@ -85,7 +85,10 @@ try {
 
     Push-Location $frontend
     try {
-        if (-not (Test-Path 'node_modules')) {
+        # npm writes node_modules\.package-lock.json as the last step of an install.
+        # Its absence means there are no dependencies yet or a previous install was
+        # interrupted, and a half-installed folder must not be trusted.
+        if (-not (Test-Path 'node_modules\.package-lock.json')) {
             Write-Host 'Installing frontend dependencies...'
             npm ci --no-fund --no-audit
             if ($LASTEXITCODE -ne 0) { throw 'Frontend dependency installation failed.' }

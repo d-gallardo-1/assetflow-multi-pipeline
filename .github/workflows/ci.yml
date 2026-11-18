@@ -60,7 +60,7 @@ jobs:
           # Licence banners and XML namespaces mention URLs without fetching them.
           # Anything else in the bundle that names another host fails the build.
           found="$(grep -rhoE "https?://[A-Za-z0-9./_-]+" dist | sort -u \
-            | grep -vE "^https?://(www\.w3\.org|react\.dev|reactjs\.org|tailwindcss\.com|github\.com|lucide\.dev|127\.0\.0\.1|localhost)" || true)"
+            | grep -vE "^https?://(www\.w3\.org|react\.dev|reactjs\.org|tailwindcss\.com|github\.com|lucide\.dev|127\.0\.0\.1|localhost)(/|$)" || true)"
           if [ -n "$found" ]; then
             echo "Unexpected external URLs in the bundle:"
             echo "$found"
@@ -80,10 +80,21 @@ jobs:
         run: docker compose up --build --detach --wait --wait-timeout 180
       - name: UI is served with its security headers
         run: |
-          curl --fail --silent --show-error "$BASE_URL/" | grep -q "AssetFlow Multi-Pipeline"
+          # "up --wait" waits for the backend health check; Nginx has none, so the
+          # first request retries while its port is still closed.
+          curl --fail --silent --show-error --retry 10 --retry-delay 1 --retry-connrefused "$BASE_URL/" | grep -q "AssetFlow Multi-Pipeline"
           curl --silent --head "$BASE_URL/" | grep -i "^content-security-policy:"
       - name: API answers through the proxy
         run: curl --fail --silent --show-error "$API/health" | grep -q '"status":"ok"'
+      - name: A request made on behalf of another site is refused
+        run: |
+          for origin in cross-site same-site; do
+            code="$(curl --silent -o /dev/null -w "%{http_code}" -X POST -H "Sec-Fetch-Site: $origin" "$API/assets/reset")"
+            echo "$origin: HTTP $code"
+            test "$code" = "403"
+          done
+          code="$(curl --silent -o /dev/null -w "%{http_code}" -H "Sec-Fetch-Site: same-origin" "$API/health")"
+          test "$code" = "200"
       - name: Stream reaches the client through Nginx without buffering
         run: |
           # The stream is opened first; the command sent afterwards must arrive
